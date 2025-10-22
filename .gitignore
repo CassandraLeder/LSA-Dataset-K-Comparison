@@ -3,3 +3,5 @@
 
 !*.py
 !*.7z
+!project_narrative.txt
+!*.md
