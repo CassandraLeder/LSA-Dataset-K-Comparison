@@ -5,3 +5,5 @@
 !*.7z
 !project_narrative.txt
 !*.md
+!*.cpp
+!*.h
