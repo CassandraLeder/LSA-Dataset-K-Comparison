@@ -1,9 +1,10 @@
 #include "cosineSimilarity.h"
+#include <iostream>
 
 // there must be a better way of doing this..
 // (it doesn't look like there is)
-std::vector<double> get_column(const std::vector<std::vector<double>> &v, const int &col_idx) {
-    std::vector<double> return_v;
+std::vector<short> get_column(const std::vector<std::vector<short>> &v, const int &col_idx) {
+    std::vector<short> return_v;
     for (const auto &row : v) {
         return_v.push_back(row.at(col_idx));
     }
@@ -11,7 +12,7 @@ std::vector<double> get_column(const std::vector<std::vector<double>> &v, const 
     return(return_v);
 }
 
-double cosine_similarity(const std::vector<double> &A, const std::vector<double> &B) {
+float cosine_similarity(const std::vector<short> &A, const std::vector<short> &B) {
     int ncomp = 0;
     if (A.size() != B.size()) {
         throw std::invalid_argument("Size of vectors is not the same (must be for dot product)");
@@ -20,7 +21,7 @@ double cosine_similarity(const std::vector<double> &A, const std::vector<double>
         ncomp = A.size();
     }
 
-    double dot_product = 0.0, mag_A = 0.0, mag_B = 0.0;
+    short dot_product = 0, mag_A = 0, mag_B = 0;
     for (int i = 0; i < ncomp; ++i) {
         dot_product += A[i] * B[i];
         mag_A += A[i] * A[i];
@@ -30,28 +31,24 @@ double cosine_similarity(const std::vector<double> &A, const std::vector<double>
     return (dot_product / (std::sqrt(mag_A) * std::sqrt(mag_B)));
 }
 
-double mean(const std::vector<double> &similarities) {
-    auto sum = 0.0;
+std::vector<std::vector<float>> cosine_sim(const std::vector<std::vector<short>> &A) {
+    size_t n_col = A[0].size();
+    // define resulting square matrix
+    std::vector<std::vector<float>> cosim_matrix(n_col, std::vector<float>(n_col));
 
-    for (auto &sim : similarities) {
-        sum += sim;
+    // calculate upper-triangle of matrix by iterating through columns
+    for (int i = 0; i < n_col; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            if (j < i) { // only actual calculation
+                cosim_matrix[i][j] = cosine_similarity(get_column(A, i), get_column(A, j));
+            }
+            else if (i == j) { // occurs after calculation except for first pass
+                cosim_matrix[i][j] = 1;
+            }
+        }
     }
 
-    return(sum / similarities.size());
-}
-
-double std_dev(const std::vector<double> &similarities, const double &mu) {
-    auto sum = 0.0;
-    
-    for (auto &sim : similarities) {
-        sum += (sim - mu) * (sim - mu);
-    }
-
-    return(sqrt((sum / similarities.size())));
-}
-
-double z_score(const double &x, const double& mu, const double& sigma) {
-    return ((x - mu) / sigma);
+    return (cosim_matrix);
 }
 
 std::pair<std::string, double> find_max(std::map<std::string, double> &similarities) {
@@ -63,27 +60,8 @@ std::pair<std::string, double> find_max(std::map<std::string, double> &similarit
     return(std::pair<std::string, double>(max->first, max->second));
 }
 
-// find the cosine similarity of an entire corpus
-std::map<std::string, double> cosine_similarity_corpus(const std::vector<std::vector<double>> &corpus) {
-    /* 
-    rows are stored as vectors in 2d vector, 
-    so get the columns as rows of a new 2d vector
-    */
-    std::vector<std::vector<double>> docs;
-    for (int i = 0; i < corpus[0].size(); ++i) { // column size is equal to size of any row vector
-        docs.push_back(get_column(corpus, i));
-    }
-    // now we have extracted the documents (columns) from the corpus matrix
-    
-    // get cosine similarity between each doc in corpus
-    std::map<std::string, double> similarities;
-    for(int i = 0; i < docs.size(); ++i) {
-        for (int j = i+1; j < docs.size(); ++j) {
-            double similarity = cosine_similarity(docs[i], docs[j]);
-            std::string sim_str = std::to_string(i+1) + "->" + std::to_string(j+1);
-            
-            similarities.insert({sim_str, similarity});
-        }
-    }
-    return(similarities); 
+
+std::vector<std::vector<float>>::const_iterator find_greatest(const std::vector<std::vector<float>> &similarities) {
+    auto max = std::max_element(similarities.begin(), similarities.end());
+    return(max);
 }

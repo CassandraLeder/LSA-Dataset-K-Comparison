@@ -14,5 +14,5 @@ class mmReader {
         mmReader(std::string file_path);
         void setFilePath(std::string file_path);
         bool filePathExists();
-        std::vector<std::vector<double>> readMM();
+        std::vector<std::vector<short>> readMM();
 };

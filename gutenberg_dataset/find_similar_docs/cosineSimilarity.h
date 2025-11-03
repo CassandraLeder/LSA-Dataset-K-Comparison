@@ -1,15 +1,13 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <cmath>
 #include <stdexcept>
 #include <algorithm>
 #include <map>
-#include <cmath>
 
-std::vector<double> get_column(const std::vector<std::vector<double>> &v, const int &col_idx);
-double mean(const std::vector<double> &similarities);
-double std_dev(const std::vector<double> &similarities, const double &mu);
-double z_score(const double &x, const double &mu, const double &sigma);
-double cosine_similarity(const std::vector<double> &A, const std::vector<double> &B);
+std::vector<short> get_column(const std::vector<std::vector<short>> &v, const int &col_idx);
+float cosine_similarity(const std::vector<short> &A, const std::vector<short> &B);
+std::vector<std::vector<float>> cosine_sim(const std::vector<std::vector<short>> &A);
 std::pair<std::string, double> find_max(std::map<std::string, double> &similarities);
-std::map<std::string, double> cosine_similarity_corpus(const std::vector<std::vector<double>> &A);
+std::vector<std::vector<float>>::const_iterator find_greatest(const std::vector<std::vector<float>> &similarities);

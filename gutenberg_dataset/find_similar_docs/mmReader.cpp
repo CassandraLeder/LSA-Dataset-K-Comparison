@@ -24,7 +24,7 @@ bool mmReader::filePathExists() {
 /*
     Parse the contents of a market matrix formatted file and return a 2d vector of double
 */
-std::vector<std::vector<double>> mmReader::readMM() {
+std::vector<std::vector<short>> mmReader::readMM() {
     if (!filePathExists()) {
         throw std::invalid_argument("File path must be set first.");
     }
@@ -40,7 +40,7 @@ std::vector<std::vector<double>> mmReader::readMM() {
     // initialize 2d vector using dimensions from file and fill with 0
     std::size_t n_col, n_row;
     line_stream >> n_col >> n_row;
-    std::vector<std::vector<double>> v(n_row, std::vector<double>(n_col));
+    std::vector<std::vector<short>> v(n_row, std::vector<short>(n_col));
 
     // now get every line that has nonzero values
     int col = 0, row = 0, val = 0;
