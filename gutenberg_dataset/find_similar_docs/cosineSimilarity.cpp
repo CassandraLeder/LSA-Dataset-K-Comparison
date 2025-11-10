@@ -12,6 +12,15 @@ std::vector<short> get_column(const std::vector<std::vector<short>> &v, const in
     return(return_v);
 }
 
+std::vector<float> get_column(const std::vector<std::vector<float>> &v, const int &col_idx) {
+    std::vector<float> return_v;
+    for (const auto &row : v) {
+        return_v.push_back(row.at(col_idx));
+    }
+
+    return(return_v);
+}
+
 // helper function to cosine similarity for corpus. this function computes the cosine similarity between two column vectors A and B
 float cosine_similarity(const std::vector<short> &A, const std::vector<short> &B) {
     // check the sizes of the column vectors
@@ -69,7 +78,7 @@ std::pair<Coords, float> find_max(const std::vector<std::vector<float>> &similar
     for (const auto &row : similarities) {
         auto max = std::max_element(row.begin(), row.end(), comparision); // may return 1 is max in the case that 1 is the only non-zero in row (so first row only)
         // find actual max
-        if (*max != 1 && max > iter_max) {
+        if (*max != 1 && *max > *iter_max) {
             iter_max = max; // iterator to actual max
             max_row_idx = i; // row where max is located
         }
