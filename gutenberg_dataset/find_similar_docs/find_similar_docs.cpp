@@ -92,34 +92,35 @@ int main(const int argc, char** argv) {
     << ". The cosine similarity is " << max.second << std::endl;
 
     Statistics statistics(similarities);
-    size_t n_col = similarities[0].size();
 
-    std::cout << std::string("μ = ", statistics.get_mu());
-    std::cout << std::string("σ = ", statistics.get_sigma());
-
-    std::vector<double> pop_z_scores;
-    for (auto& row : similarities) {
-        for (auto& similarity : row) {
-            pop_z_scores.push_back(statistics.pop_z_score(similarity));
-        }
-    }
+    std::cout << "μ = " << statistics.get_mu();
+    std::cout << "σ = " << statistics.get_sigma();
 
     auto doc_means = statistics.doc_mean(similarities);
     auto doc_std_devs = statistics.doc_std_dev(similarities, doc_means);
     auto doc_z_scores = statistics.doc_z_score(similarities, doc_means, doc_std_devs);
+    auto pop_z_scores = statistics.pop_z_score(similarities);
 
     // preform a sanity check (these vectors should all be of equal size)
     assert(doc_means.size() == doc_std_devs.size());
     assert(pop_z_scores.size() == doc_z_scores.size());
     
     // if passed..
-    auto n_elements = doc_means.size();
-    for (auto i = 0; i < n_elements; ++i) {
-        print_ln(std::string("For document ", i + 1));
-        print_ln(std::string("Mean is ", doc_means[i]));
-        print_ln(std::string("Standard deviation is ", doc_std_devs[i]));
-        print_ln(std::string("Local z-score is ", doc_z_scores[i]));
-        print_ln(std::string("Population z-score is ", pop_z_scores[i]));
+    auto n_docs = similarities.size();
+    for (auto i = 0; i < n_docs; ++i) {
+        print_ln("For document " + i + 1);
+        print_ln("Mean is " + std::to_string(doc_means[i]));
+        print_ln("Standard deviation is " + std::to_string(doc_std_devs[i]));
+    }
+        
+    print_ln("Population z-scores for cosine similarity matrix: ");
+    for (auto z_score : pop_z_scores) {
+        print_tbl(z_score);
+    }
+
+    print_ln("Document-sampled z-scores for cosine similarity matrix: ");
+    for (auto z_score : doc_z_scores) {
+        print_tbl(z_score);
     }
     
     return(0);

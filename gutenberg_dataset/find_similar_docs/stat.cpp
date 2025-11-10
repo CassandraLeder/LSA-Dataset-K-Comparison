@@ -6,13 +6,22 @@ Statistics::Statistics(const std::vector<std::vector<float>> &similarities) {
     sigma = pop_std_dev(similarities, mu);
 }
 
+// define similarity as only valid when its not a zero or one (is cosine similarity value)
+bool Statistics::is_valid(float similarity) {
+    return (similarity != 0 && similarity != 1);
+}
+
+/* 
+  ------------MEAN-------------
+                                */
+
 // compute the arithmetic of mean but only return sum and count
 std::pair<float, int> Statistics::mean(const std::vector<float> &sim_vec) {
     auto sum = 0.0;
     auto count = 0;
 
     for (auto& similarity : sim_vec) {
-        if (similarity != 1) {
+        if (is_valid(similarity)) {
             ++count;
             sum += similarity;
         }
@@ -37,31 +46,6 @@ float Statistics::pop_mean(const std::vector<std::vector<float>> &similarities) 
     return(sum / count);
 }
 
-// return population standard deviation, sigma
-// sigma = each element - population mean squared
-double Statistics::pop_std_dev(const std::vector<std::vector<float>> &similarities, const float &mu) {
-    auto sum = 0.0;
-    
-    for (auto& row : similarities) {
-        for (auto& similarity : row) {
-            if (similarity != 1) {
-                sum += (similarity - mu) * (similarity - mu);
-            }
-        }
-    }
-
-    return(sqrt(sum / similarities.size()));
-}
-
-// z-score for each individual cosine similarity = score - population mean / population standard deviation
-double Statistics::pop_z_score(const float &x) {
-    return ((x - mu) / sigma);
-}
-
-double Statistics::z_score(const float &x, const float &x_bar, const double &s) {
-    return((x - x_bar) / s);
-}
-
 // get a document's mean cosine similarity for all documents in corpus
 std::vector<float> Statistics::doc_mean(const std::vector<std::vector<float>> &similarities) {
     std::vector<float> means;
@@ -77,6 +61,29 @@ std::vector<float> Statistics::doc_mean(const std::vector<std::vector<float>> &s
     return(means);
 }
 
+/* 
+  ------------STD DEV-----------
+                                */
+
+
+// return population standard deviation, sigma
+// sigma = each element - population mean squared
+double Statistics::pop_std_dev(const std::vector<std::vector<float>> &similarities, const float &mu) {
+    auto sum = 0.0;
+    auto count = 0;
+    
+    for (auto& row : similarities) {
+        for (auto& similarity : row) {
+            if (is_valid(similarity)) {
+                ++count;
+                sum += (similarity - mu) * (similarity - mu);
+            }
+        }
+    }
+
+    return(sqrt(sum / count));
+}
+
 std::vector<double> Statistics::doc_std_dev(const std::vector<std::vector<float>> &similarities, const std::vector<float> &doc_means) {
     std::vector<double> std_devs;
 
@@ -85,7 +92,7 @@ std::vector<double> Statistics::doc_std_dev(const std::vector<std::vector<float>
         auto doc_i = get_column(similarities, i);
 
         for (auto& similarity : doc_i) {
-            if (similarity != 1) {
+            if (is_valid(similarity)) {
                 sum += (similarity - doc_means[i]) * (similarity - doc_means[i]);
             }
         }
@@ -95,13 +102,41 @@ std::vector<double> Statistics::doc_std_dev(const std::vector<std::vector<float>
     return(std_devs);
 }
 
+/* 
+  -----------Z-SCORE-----------
+                                */
+
+
+// z-score for each individual cosine similarity = score - population mean / population standard deviation
+double Statistics::z_score(const float &x, const float &x_bar, const double &s) {
+    return((x - x_bar) / s);
+}
+
+
+std::vector<double> Statistics::pop_z_score(const std::vector<std::vector<float>> &similarities) {
+    std::vector<double> pop_z_scores;
+
+    for (auto& row : similarities) {
+        for (auto& similarity : row) {
+            if (is_valid(similarity)) {
+                pop_z_scores.push_back(z_score(similarity, mu, sigma));
+            }
+        }
+    }
+
+    return(pop_z_scores);
+
+}
+
+// we return a 2d vector here only because it is convenient for output to have all the z-scores of a document together
 std::vector<double> Statistics::doc_z_score(const std::vector<std::vector<float>> &similarities, const std::vector<float> &doc_means, const std::vector<double> &doc_std_dev) {
     std::vector<double> z_scores;
 
     for (auto i = 0; i < similarities[0].size(); ++i) {
         auto doc_i = get_column(similarities, i);
+
         for (auto& similarity : doc_i) {
-            if (similarity != 1) {
+            if (similarity != 1 && similarity != 0) {
                 z_scores.push_back(z_score(similarity, doc_means[i], doc_std_dev[i]));
             }
         }
