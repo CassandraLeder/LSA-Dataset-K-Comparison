@@ -1,18 +1,5 @@
 #include "cosineSimilarity.h"
 
-// there must be a better way of doing this..
-// (it doesn't look like there is)
-// take in a 2d vector (corpus) and return just the column requested
-template<typename T, typename A> 
-std::vector<T> get_column(const std::vector<std::vector<T,A>> &v, const int &col_idx) {
-    std::vector<short> return_v;
-    for (const auto &row : v) {
-        return_v.push_back(row.at(col_idx));
-    }
-
-    return(return_v);
-}
-
 // helper function to cosine similarity for corpus. this function computes the cosine similarity between two column vectors A and B
 float cosine_similarity(const std::vector<short> &A, const std::vector<short> &B) {
     // check the sizes of the column vectors
@@ -37,8 +24,8 @@ std::vector<std::vector<float>> cosine_similarity(const std::vector<std::vector<
 
     // calculate upper-triangle of matrix by iterating through columns
     for (int i = 0; i < n_col; ++i) {
-        for (int j = 0; j <= i; ++j) { // "<=" because we want to ignore the condition where j > i (extracting upper-triangle with diagonal)
-            if (j < i) { // only actual calculation
+        for (int j = 0; j < n_col; ++j) { // "<=" because we want to ignore the condition where j > i (extracting upper-triangle with diagonal)
+            if (j > i) { // only actual calculation
                 cosim_matrix[i][j] = cosine_similarity(get_column(corpus, i), get_column(corpus, j));
             }
             else if (i == j) { // occurs after calculation except for first pass
@@ -58,7 +45,7 @@ bool comparision (float a, float b) {
     return (a < b); 
 }
 
-// find the max float from a cosine similarity matrix ignoring the 1 diagonal
+// find the top 5 max float from a cosine similarity matrix ignoring the 1 diagonal
 std::pair<Coords, float> find_max(const std::vector<std::vector<float>> &similarities) {
     // create min vector for initalization of max iterator
     std::vector<float> MIN_VECTOR = {std::numeric_limits<float>::min()};
@@ -85,4 +72,15 @@ std::pair<Coords, float> find_max(const std::vector<std::vector<float>> &similar
     std::pair<Coords, float> index_max = {coords, *iter_max};
     
     return(index_max);
+}
+
+// return NUM_MAX number from sorted 1d vector version of 2d vector
+std::vector<float> find_top_maxs(const std::vector<std::vector<float>> &similarities) {
+    std::vector<float> v;
+
+    for (auto &row : similarities) {
+        v.insert(v.end(), row.begin(), row.end());
+    }
+    std::sort(v.begin(), v.end());
+    return(v);
 }

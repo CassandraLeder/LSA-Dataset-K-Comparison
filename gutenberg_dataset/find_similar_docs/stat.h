@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "cosineSimilarity.h"
+#include "util.h"
 class Statistics {
     private:
         float mu;

@@ -27,14 +27,14 @@ def get_corpus_name(corpus_fname):
     return(corpus_name)
 
 class model_:
-    doc_similarity = {} # dictionary of cosine similarities
-    # below are gensim objects
-    model = ''
-    dictionary = ''
-    corpus = ''
-    
     def __init__(self, k):
         self.k = k
+        self.doc_similarity = {} # dictionary of cosine similarities
+
+        # below are gensim objects
+        self.model = None
+        self.dictionary = None
+        self.corpus = None
 
     # abstract the lsa function into parts
     """
@@ -114,12 +114,12 @@ class model_:
         
 
 class network_model:
-    lsa_models = []
-    models = []
     def __init__(self, k_list, graph_fpath, connections):
+        self.models = []
         for k in k_list:
-            self.models.append(model_(k))
+            self.models.append(model_(k)) # model object for each node in network
         self.k_list = k_list
+        self.lsa_models = []
         self.graph_fpath = graph_fpath
         self.connections = connections # dictionary of possible connections in network
 
@@ -191,9 +191,17 @@ if __name__ == '__main__':
         raise ValueError("Usage: ./lsa_model [path to data directory] [dictionary name] [corpus name]")
     
     data_dir = os.path.join(os.getcwd(), sys.argv[1])
-    dest_dir = os.path.join(os.getcwd(), 'models')
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
+    model_dir = os.path.join(os.getcwd(), 'models')
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    
+    graph_dir = os.path.join(os.getcwd(), 'graphs')
+    if not os.path.exists(graph_dir):
+        os.makedirs(graph_dir)
+        
+    correlation_dir = os.path.join(os.getcwd(), 'correlation')
+    if not os.path.exists(correlation_dir):
+        os.makedirs(correlation_dir)
 
     corpus_name = get_corpus_name(sys.argv[3])
 
@@ -202,7 +210,7 @@ if __name__ == '__main__':
     """
     networks = []
     networks.append(network_model(k_list = [.01, .05, .1, .5, .65, .75, .80, .85, .90, .95, .99],
-                                  graph_fpath=os.path.join(dest_dir, corpus_name + '_k-network.graphml'),
+                                  graph_fpath=os.path.join(graph_dir, corpus_name + '_k-network.graphml'),
                                   connections={}))
     
     """
@@ -215,7 +223,7 @@ if __name__ == '__main__':
         for model in network.models:
             # get lsa model from model_ object in network_model object
             lsa_model = model.run_lsa(data_dir,
-                                      dest_dir,
+                                      model_dir,
                                       sys.argv[2],
                                       sys.argv[3])
             # add to network models
@@ -229,7 +237,7 @@ if __name__ == '__main__':
         print(network.connections)
         
         # save correlation to file
-        lsa_correlation_fpath = os.path.join(dest_dir, corpus_name + '_lsa_correlation')
+        lsa_correlation_fpath = os.path.join(correlation_dir, corpus_name + '_pearson_correlation')
         np.save(lsa_correlation_fpath, correlations)
         
         # create/output graph
