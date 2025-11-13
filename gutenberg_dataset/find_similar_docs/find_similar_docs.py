@@ -43,6 +43,9 @@ def doc_z_score(similarities, x_bar, s):
     for similarity in similarities:
         z_scores.append((similarity - x_bar) / s)
     return(z_scores)
+
+def find_similar_docs(similarities):
+    return(similarities.max(axis=1, where=(similarities > 0), initial=0))
     
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -62,7 +65,7 @@ if __name__ == '__main__':
     doc_z_scores = doc_z_score(similarities, x_bar, s)
     
     # output/write statistics
-    pop_file = os.path.join(constants.POINTCLOUD_AFTER_FOLDER, sys.argv[1] + "pop_stats.txt")
+    pop_file = os.path.join(constants.STATS_AFTER_FOLDER, sys.argv[1] + "pop_stats.txt")
     clear_file(pop_file)
     
     print_write(f"μ = {mu}", pop_file)
@@ -72,7 +75,7 @@ if __name__ == '__main__':
     for z_score in pop_z_scores:
         print_write(z_score, pop_file)
         
-    doc_file = os.path.join(constants.POINTCLOUD_AFTER_FOLDER, sys.argv[1] + "doc_stats.txt")
+    doc_file = os.path.join(constants.STATS_AFTER_FOLDER, sys.argv[1] + "doc_stats.txt")
     clear_file(doc_file)
     
     print_write(f"x̄ = {x_bar}", doc_file)
@@ -81,3 +84,7 @@ if __name__ == '__main__':
     print_write("Document z-scores are: ", doc_file)
     for z_score in doc_z_scores:
         print_write(z_score, doc_file)
+    
+    max_similarity_file = os.path.join(constants.STATS_AFTER_FOLDER, sys.argv[1] + "max_similarity.txt")
+    max_similarity = find_similar_docs(similarities)
+    print_write(f"Max similarity is {max_similarity}", max_similarity_file)

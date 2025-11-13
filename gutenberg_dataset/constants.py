@@ -15,4 +15,4 @@ CREATE_DICTIONARY_SCRIPT_PATH = os.path.join(os.getcwd(), 'create_dictionary2.py
 LSA_SCRIPT_PATH = os.path.join(os.getcwd(), "./lsa_model.py")
 CPP_FOLDER = os.path.join(os.getcwd(), "find_similar_docs/")
 POINTCLOUD_FOLDER = os.path.join(DATASET_PATH, "docs_similarity_pointcloud/")
-POINTCLOUD_AFTER_FOLDER = os.path.join(DATASET_PATH, "after_pointcloud/")
+STATS_AFTER_FOLDER = os.path.join(DATASET_PATH, "after_stats/")
