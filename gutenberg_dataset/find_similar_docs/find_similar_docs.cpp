@@ -141,7 +141,7 @@ int main(const int argc, char** argv) {
     auto doc_z_scores = statistics.doc_z_score(similarities, doc_means, doc_std_devs);
     auto pop_z_scores = statistics.pop_z_score(similarities);
 
-    // preform a sanity check (these vectors should all be of equal size)
+    // perform a sanity check (these vectors should all be of equal size)
     assert(doc_means.size() == doc_std_devs.size());
     assert(pop_z_scores.size() == doc_z_scores.size());
     

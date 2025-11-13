@@ -14,6 +14,8 @@ import gensim
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.stats import pearsonr
+from scipy.io import mmwrite
+from scipy import sparse
 import matplotlib.pyplot as plt
 import networkx as nx
 from math import ceil

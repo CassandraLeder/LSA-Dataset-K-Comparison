@@ -45,7 +45,7 @@ bool comparision (float a, float b) {
     return (a < b); 
 }
 
-// find the top 5 max float from a cosine similarity matrix ignoring the 1 diagonal
+// find the max float from a cosine similarity matrix ignoring the 1 diagonal
 std::pair<Coords, float> find_max(const std::vector<std::vector<float>> &similarities) {
     // create min vector for initalization of max iterator
     std::vector<float> MIN_VECTOR = {std::numeric_limits<float>::min()};
@@ -74,13 +74,18 @@ std::pair<Coords, float> find_max(const std::vector<std::vector<float>> &similar
     return(index_max);
 }
 
-// return NUM_MAX number from sorted 1d vector version of 2d vector
+// return sorted flattened 1d vector of 2d cosine similarity vector
 std::vector<float> find_top_maxs(const std::vector<std::vector<float>> &similarities) {
     std::vector<float> v;
 
     for (auto &row : similarities) {
-        v.insert(v.end(), row.begin(), row.end());
+        for (auto &similarity : row) {
+            if (similarity != 0 && similarity != 1) {
+                v.push_back(similarity);
+            }
+        }
     }
-    std::sort(v.begin(), v.end());
+    // use greater as comparator to sort in descending order (greatest first)
+    std::sort(v.begin(), v.end(), std::greater<>());
     return(v);
 }
