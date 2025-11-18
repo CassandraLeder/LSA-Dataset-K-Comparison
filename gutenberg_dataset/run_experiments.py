@@ -7,7 +7,7 @@ Tasks:
     2. Preprocess and split into documents
     3. Create corpora
     4. Run LSA experiments
-    5. Run document-level experiments
+    5. Run document-level experiments on cosine similarity matrices before/after LSA
 
 """
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # build cpp files in advance
     subprocess.run(["g++", constants.CPP_FOLDER, "*.cpp", "-o", "find_similar_docs.exe"])
 
-    # now we have a list of text files to run tasks on
+    # get a list of text files to run tasks on
     works_list = os.listdir(constants.DATASET_PATH)
     for work in works_list:
         print(f"\n\nRunning experiments on {work}.")
@@ -50,10 +50,18 @@ if __name__ == "__main__":
                         corpus_dict_path,
                         corpus_file_path])
         
-        # do document level analysis 
+        # do document level analysis before LSA
         subprocess.run(["find_similar_docs.exe", corpus_file_path])
         
         pointcloud_file_path = os.path.join(constants.POINTCLOUD_FOLDER,
                                             work.replace('.txt', '') + '_pointcloud.csv')
         
         subprocess.run(["risper", "--threshold 1", pointcloud_file_path])
+    
+    # compute more document level tests with each cosine similarity file after LSA
+    similarity_list = os.listdir(constants.STATS_AFTER_FOLDER)
+    for similarity in similarity_list:
+        subprocess.run(["python", constants.CPP_FOLDER, "find_similar_docs.py", similarity])
+        #subprocess.run(["risper", "--threshold 1", ""])
+    
+    
