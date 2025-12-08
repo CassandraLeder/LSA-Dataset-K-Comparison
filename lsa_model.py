@@ -14,11 +14,10 @@ import gensim
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.stats import pearsonr
-from scipy.io import mmwrite
-from scipy import sparse
 import matplotlib.pyplot as plt
 import networkx as nx
 from math import ceil
+import constants
 
 def get_corpus_name(corpus_fname):
     # slice all non '_corpus' out of fname
@@ -95,21 +94,27 @@ class model_:
     """
     # the run function for LSA
     """
-    def run_lsa(self, data_dir, dest_dir, dictionary_fname, corpus_fname, doc_count='corpus_length'):
+    def run_lsa(self, data_dir, dictionary_fname, corpus_fname, doc_count='corpus_length', dest_dir=constants.MODEL_FOLDER, similarity_dir=constants.COSIM_FOLDER):
+        # setup saving
+        corpus_name = get_corpus_name(corpus_fname)
+        
+        save_folder = os.path.join(dest_dir, corpus_name + "_models")
+        os.makedirs(save_folder) if not os.path.exists(save_folder) else ""
+
+
         # load corpus/dictionary
         self.load_data(data_dir, dictionary_fname, corpus_fname)
         # get lsa models
-        (lsa_model, doctopic_matrix) = self.lsa(dest_dir, self.get_tfidf(), doc_count=doc_count)
+        (lsa_model, doctopic_matrix) = self.lsa(save_folder, self.get_tfidf(), doc_count=doc_count)
         self.model = lsa_model
         # compute similarity matrix (cosine similarity)
         similarity = self.cosineSim(doctopic_matrix)
 
         # save files
-        corpus_name = get_corpus_name(corpus_fname)
-        lsa_docvectors_fpath = os.path.join(dest_dir, corpus_name + '_lsa_docvecs_k-' + str(self.k))
+        lsa_docvectors_fpath = os.path.join(save_folder, corpus_name + '_lsa_docvecs_k-' + str(self.k))
         np.save(lsa_docvectors_fpath, doctopic_matrix)
         
-        lsa_cosinesim_fpath = os.path.join(dest_dir, corpus_name + '_lsa_cosineSim_k-' + str(self.k))
+        lsa_cosinesim_fpath = os.path.join(similarity_dir, corpus_name + '_lsa_cosineSim_k-' + str(self.k))
         np.save(lsa_cosinesim_fpath, similarity)
         
         return (lsa_model)
@@ -154,7 +159,7 @@ class network_model:
         nx.draw_networkx_edge_labels(G, pos, edge_labels)
             
         # show graph to screen
-        plt.show()
+        #plt.show()
             
         # output graphxml file
         nx.write_graphml(G, self.graph_fpath)
@@ -192,19 +197,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 4:
         raise ValueError("Usage: ./lsa_model [path to data directory] [dictionary name] [corpus name]")
     
-    data_dir = os.path.join(os.getcwd(), sys.argv[1])
-    model_dir = os.path.join(os.getcwd(), 'models')
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir)
-    
-    graph_dir = os.path.join(os.getcwd(), 'graphs')
-    if not os.path.exists(graph_dir):
-        os.makedirs(graph_dir)
-        
-    correlation_dir = os.path.join(os.getcwd(), 'correlation')
-    if not os.path.exists(correlation_dir):
-        os.makedirs(correlation_dir)
-
+    data_dir = sys.argv[1]
+    graph_dir = constants.GRAPH_FOLDER        
     corpus_name = get_corpus_name(sys.argv[3])
 
     """
@@ -224,10 +218,9 @@ if __name__ == '__main__':
         # get LSA models
         for model in network.models:
             # get lsa model from model_ object in network_model object
-            lsa_model = model.run_lsa(data_dir,
-                                      model_dir,
-                                      sys.argv[2],
-                                      sys.argv[3])
+            lsa_model = model.run_lsa(data_dir=data_dir,
+                                      dictionary_fname=sys.argv[2],
+                                      corpus_fname=sys.argv[3])
             # add to network models
             network.lsa_models.append(lsa_model)
             # output topic vectors
@@ -239,7 +232,7 @@ if __name__ == '__main__':
         print(network.connections)
         
         # save correlation to file
-        lsa_correlation_fpath = os.path.join(correlation_dir, corpus_name + '_pearson_correlation')
+        lsa_correlation_fpath = os.path.join(constants.PEARSON_FOLDER, corpus_name + '_pearson_correlation')
         np.save(lsa_correlation_fpath, correlations)
         
         # create/output graph
